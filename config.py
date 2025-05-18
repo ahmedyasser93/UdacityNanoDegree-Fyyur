@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_moment import Moment
+#from flask_moment import Moment
 import os
 SECRET_KEY = os.urandom(32)
 # Grabs the folder where the script runs.
@@ -20,7 +20,7 @@ db = SQLAlchemy(app)
 
 # Initialize Migrate and Moment extensions
 migrate = Migrate(app, db)
-moment = Moment(app)
+#moment = Moment(app)
 
 # Set the csrf token for Flask-WTF if needed
 app.config['WTF_CSRF_ENABLED'] = False
