@@ -13,10 +13,16 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
-from config import db, app
-from models import Venue, Artist, Show 
+import config
+from models import db, Venue, Artist, Show
 
 
+app = Flask(__name__)
+app.config.from_object(config)  
+db.init_app(app)
+migrate = Migrate(app, db)
+# Set the csrf token for Flask-WTF if needed
+app.config['WTF_CSRF_ENABLED'] = False
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -161,14 +167,13 @@ def create_venue_submission():
       db.session.rollback()
       
       #on unsuccessful db insert, flash an error instead.
-      flash('An error occurred. Venue ' + form.name.data + ' could not be listed.')
+      flash('An error occurred. Venue could not be listed.')
     finally:
       db.session.close()
 
     return render_template('pages/home.html')
   else:
     flash('An error occurred. Venue could not be listed.')
-    flash(f'Form validation failed: {form.errors}')
 
     return render_template('forms/new_venue.html', form=form)
 
@@ -338,35 +343,35 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   form = ArtistForm(request.form)
 
-  #if form.validate():
+  if form.validate():
     # insert form data as a new artist record in the db, instead
-  artist = Artist(name=form.name.data,
-                  city=form.city.data,
-                  state=form.state.data,
-                  phone=form.phone.data,
-                  genres=form.genres.data,
-                  image_link=form.image_link.data,
-                  facebook_link=form.facebook_link.data,
-                  website=form.website_link.data,
-                  seeking_venue=form.seeking_venue.data,
-                  seeking_description=form.seeking_description.data
-                )
-  try:
-    db.session.add(artist)
-    db.session.commit()
-    # on successful db insert, flash success
-    flash('Artist ' + form.name.data + ' was successfully listed!')
-  except:
-    db.session.rollback()
-    # on unsuccessful db insert, flash an error instead.
-    flash('An error occurred. Artist ' + form.name.data + ' could not be listed.')
-  finally:
-    db.session.close()
+    artist = Artist(name=form.name.data,
+                    city=form.city.data,
+                    state=form.state.data,
+                    phone=form.phone.data,
+                    genres=form.genres.data,
+                    image_link=form.image_link.data,
+                    facebook_link=form.facebook_link.data,
+                    website=form.website_link.data,
+                    seeking_venue=form.seeking_venue.data,
+                    seeking_description=form.seeking_description.data
+                  )
+    try:
+      db.session.add(artist)
+      db.session.commit()
+      # on successful db insert, flash success
+      flash('Artist ' + form.name.data + ' was successfully listed!')
+    except:
+      db.session.rollback()
+      # on unsuccessful db insert, flash an error instead.
+      flash('An error occurred. Artist ' + form.name.data + ' could not be listed.')
+    finally:
+      db.session.close()
 
-  return render_template('pages/home.html')
-  #else:
-    #flash('An error occurred. Artist could not be listed.')
-    #return render_template('forms/new_artist.html', form=form)
+    return render_template('pages/home.html')
+  else:
+    flash('An error occurred. Artist could not be listed.')
+    return render_template('forms/new_artist.html', form=form)
 
 
 #  Shows
